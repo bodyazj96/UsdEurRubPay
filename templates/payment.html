@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="./static/favicon.ico" rel="icon">
+
+    <title>Payment page</title>
+</head>
+<body>
+
+    <form action="payment_request" method="post">
+        <b>Payment form</b><br>
+        <br>
+        Amount:
+        <input type="number" name="payment_amount" min="0" required><br>
+        <br>
+        Currency:
+        <select name="currency" required>
+            <option value="usd">USD</option>
+            <option value="eur">EUR</option>
+            <option value="rub">RUB</option>
+        </select><br>
+        <br>
+        Item description:<br>
+        <br>
+        <textarea name="item_description"></textarea><br>
+        <br>
+        {% with messages = get_flashed_messages(with_categories=True) %}
+            {% if messages %}
+                {% for category, msg in messages %}
+                    <div class="alert-{{category}}"<p>{{msg}}</p></div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <input type="submit" value="Pay">
+    </form>
+
+</body>
+</html>
