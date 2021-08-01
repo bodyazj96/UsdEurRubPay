@@ -1,34 +1,18 @@
 from flask import Flask, request, render_template, redirect, flash
 import hashlib
 import requests
-import csv
-import datetime
+from db import insert_data_to_db, create_connection
+import os
 
 
 app = Flask(__name__)
 app.secret_key = "topsecret"
 
+database = os.path.join('./', 'sqlitedatabase.db')
 
 @app.route("/")
 def payment_form():
     return render_template('payment.html')
-
-
-def write_to_database(payer_request):
-
-    # this function writes the necessary info submitted by user
-    # to the "database.csv" file
-
-    with open('database.csv', newline='', mode='a') as database:
-
-        currency = request.form['currency']
-        amount = request.form['payment_amount']
-        payment_time = datetime.datetime.now()
-        description = request.form['item_description']
-        shop_order_id = payer_request['shop_order_id']
-
-        csv_writer = csv.writer(database, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        csv_writer.writerow([currency, amount, payment_time, description, shop_order_id])
 
 
 @app.route('/payment_request', methods=['GET', 'POST'])
@@ -63,7 +47,9 @@ def pay():
                 "sign": str(sign)
             }
 
-            write_to_database(payer_request)
+            connection = create_connection(database)
+            insert_data_to_db(connection, payer_request)
+            connection.close()
 
             return render_template('eur_payment.html', data=payer_request)
 
@@ -92,9 +78,12 @@ def pay():
                 "sign": str(sign)
             }
 
-            write_to_database(payer_request)
+            connection = create_connection(database)
+            insert_data_to_db(connection, payer_request)
+            connection.close()
 
             url = 'https://core.piastrix.com/bill/create'
+
             response = requests.post(url, json=payer_request)
             if response.json()['result']:
                 redirect_url = str(response.json()['data']['url'])
@@ -128,9 +117,12 @@ def pay():
                 "sign": str(sign)
             }
 
-            write_to_database(payer_request)
+            connection = create_connection(database)
+            insert_data_to_db(connection, payer_request)
+            connection.close()
 
             url = 'https://core.piastrix.com/invoice/create'
+
             response = requests.post(url, json=payer_request)
 
             if response.json()['result']:
